@@ -13,7 +13,6 @@ type Format int
 const (
 	Html Format = iota
 	Text
-	Css
 )
 
 type Formats map[Format]*FormatOptions
