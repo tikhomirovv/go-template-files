@@ -1,4 +1,6 @@
-# go-email-templates [![GoDoc](https://godoc.org/github.com/tikhomirovv/go-email-templates?status.svg)](https://godoc.org/github.com/tikhomirovv/go-email-templates) [![Go Report Card](https://goreportcard.com/badge/github.com/tikhomirovv/go-email-templates)](https://goreportcard.com/report/github.com/tikhomirovv/go-email-templates)
+# go-email-templates
+
+[![GoDoc](https://godoc.org/github.com/tikhomirovv/go-email-templates?status.svg)](https://godoc.org/github.com/tikhomirovv/go-email-templates) [![Go Report Card](https://goreportcard.com/badge/github.com/tikhomirovv/go-email-templates)](https://goreportcard.com/report/github.com/tikhomirovv/go-email-templates)
 
 <!-- [![GoCover](http://gocover.io/_badge/github.com/tikhomirovv/go-email-templates)](http://gocover.io/github.com/tikhomirovv/go-email-templates) -->
 
