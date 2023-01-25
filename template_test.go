@@ -162,16 +162,11 @@ func TestExecute(t *testing.T) {
 
 func TestSetConfiguration(t *testing.T) {
 	templateName := "template/markdown"
-	fsys := createFS(t, []file{
-		{templateName + ".md", `# {{upper .Title}}`},
-	})
+	fsys := createFS(t, []file{{templateName + ".md", `# {{upper .Title}}`}})
 
 	cfg := &ts.Configuration{
 		TemplatesFS: &fsys,
 		Formats: ts.Formats{
-			ts.Html: &ts.FormatOptions{
-				IsRequired: false,
-			},
 			ts.Text: &ts.FormatOptions{
 				FileExtension: "md",
 				IsRequired:    true,

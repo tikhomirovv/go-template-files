@@ -119,9 +119,6 @@ cfg.Formats[ts.Text].FileExtension = "md"
 cfg := &ts.Configuration{
 	TemplatesFS: &fsys,
 	Formats: ts.Formats{
-		ts.Html: &ts.FormatOptions{
-			IsRequired: false,
-		},
 		ts.Text: &ts.FormatOptions{
 			FileExtension: "md",
 			IsRequired:    true,
