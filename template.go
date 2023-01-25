@@ -58,7 +58,7 @@ func Must(t *Template, err error) *Template {
 // described in the configuration. If the presence of a particular file format is marked
 // as optional (`isRequired` == false) in the configuration, the file read error is suppressed
 func (t *Template) getFiles() error {
-	fsys := *t.templates.cfg.templatesFS
+	fsys := *t.templates.cfg.TemplatesFS
 	formats := t.templates.cfg.Formats
 	t.files = make(TemplateFiles)
 	for format, opts := range formats {
@@ -100,7 +100,7 @@ func (t *Template) ExecuteHtml(wr io.Writer, vars interface{}) error {
 	template, err := htmlTemplate.
 		New(path.Base(string(htmlFilename))).
 		Funcs(t.funcs).
-		ParseFS(*t.templates.cfg.templatesFS, string(htmlFilename))
+		ParseFS(*t.templates.cfg.TemplatesFS, string(htmlFilename))
 	if err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func (t *Template) ExecuteText(wr io.Writer, vars interface{}) error {
 	template, err := textTemplate.
 		New(path.Base(string(textFilename))).
 		Funcs(t.funcs).
-		ParseFS(*t.templates.cfg.templatesFS, string(textFilename))
+		ParseFS(*t.templates.cfg.TemplatesFS, string(textFilename))
 	if err != nil {
 		return err
 	}

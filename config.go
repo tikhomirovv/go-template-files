@@ -3,7 +3,7 @@ package templates
 import "io/fs"
 
 type Configuration struct {
-	templatesFS *fs.FS
+	TemplatesFS *fs.FS
 	Formats     Formats
 	// globalCssFile  string
 }
@@ -24,7 +24,7 @@ type FormatOptions struct {
 // NewConfiguration creates a default configuration that can be changed
 func NewConfiguration(templatesFS *fs.FS) *Configuration {
 	return &Configuration{
-		templatesFS: templatesFS,
+		TemplatesFS: templatesFS,
 		Formats: Formats{
 			Html: &FormatOptions{
 				FileExtension: "html",

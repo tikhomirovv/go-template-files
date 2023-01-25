@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	templates "github.com/tikhomirovv/go-email-templates"
+	ts "github.com/tikhomirovv/go-template-files"
 )
 
 type file struct {
@@ -44,11 +44,11 @@ func TestGetTemplates(t *testing.T) {
 		// the template have html only, no txt
 		{"template2/sub/two.html", `-`},
 	})
-	cfg := templates.NewConfiguration(&fsys)
-	tpls := templates.NewTemplates(*cfg)
+	cfg := ts.NewConfiguration(&fsys)
+	tpls := ts.NewTemplates(*cfg)
 
 	t.Run("HTML:required", func(t *testing.T) {
-		cfg.Formats[templates.Html].IsRequired = true
+		cfg.Formats[ts.Html].IsRequired = true
 		tpls.SetConfiguration(*cfg)
 
 		tmpl, err := tpls.Get("template1/no-template")
@@ -62,14 +62,14 @@ func TestGetTemplates(t *testing.T) {
 	})
 
 	t.Run("HTML:optional", func(t *testing.T) {
-		cfg.Formats[templates.Html].IsRequired = false
+		cfg.Formats[ts.Html].IsRequired = false
 		tpls.SetConfiguration(*cfg)
 		tmpl, err := tpls.Get("template1/no-template")
 		testTemplateExists(t, tmpl, err)
 	})
 
 	t.Run("TXT:required", func(t *testing.T) {
-		cfg.Formats[templates.Text].IsRequired = true
+		cfg.Formats[ts.Text].IsRequired = true
 		tpls.SetConfiguration(*cfg)
 
 		tmpl, err := tpls.Get("template2/subdir/two")
@@ -80,7 +80,7 @@ func TestGetTemplates(t *testing.T) {
 	})
 
 	t.Run("TXT:optional", func(t *testing.T) {
-		cfg.Formats[templates.Text].IsRequired = false
+		cfg.Formats[ts.Text].IsRequired = false
 		tpls.SetConfiguration(*cfg)
 		tmpl, err := tpls.Get("template2/subdir/two")
 		testTemplateExists(t, tmpl, err)
@@ -88,7 +88,7 @@ func TestGetTemplates(t *testing.T) {
 }
 
 // testTemplateExists makes sure the template is accessed
-func testTemplateExists(t *testing.T, tmpl *templates.Template, err error) {
+func testTemplateExists(t *testing.T, tmpl *ts.Template, err error) {
 	if err != nil {
 		t.Error(err)
 	}
@@ -99,7 +99,7 @@ func testTemplateExists(t *testing.T, tmpl *templates.Template, err error) {
 }
 
 // testTemplateNotExists makes sure the template is not accessed
-func testTemplateNotExists(t *testing.T, tmpl *templates.Template, err error) {
+func testTemplateNotExists(t *testing.T, tmpl *ts.Template, err error) {
 	if tmpl != nil {
 		t.Error("the template must not be found")
 	}
@@ -113,10 +113,10 @@ func TestExecute(t *testing.T) {
 		{templateName + ".html", `<html><head><title>{{upper .Title}}</title></head></html>`},
 		{templateName + ".txt", `# {{upper .Title}}`},
 	})
-	tmpls := templates.NewTemplates(*templates.NewConfiguration(&fsys))
-	funcMap := templates.FuncMap{"upper": strings.ToUpper}
+	tmpls := ts.NewTemplates(*ts.NewConfiguration(&fsys))
+	funcMap := ts.FuncMap{"upper": strings.ToUpper}
 	vars := map[string]interface{}{"Title": "Hello from tests!"}
-	tmpl := templates.Must(tmpls.Get(templateName)).Funcs(funcMap)
+	tmpl := ts.Must(tmpls.Get(templateName)).Funcs(funcMap)
 
 	expectHtml := `<html><head><title>HELLO FROM TESTS!</title></head></html>`
 	expectText := `# HELLO FROM TESTS!`
@@ -158,4 +158,38 @@ func TestExecute(t *testing.T) {
 			t.Errorf("incorrect text template processing; expect %#q; got: %#q", expectText, gotText)
 		}
 	})
+}
+
+func TestSetConfiguration(t *testing.T) {
+	templateName := "template/markdown"
+	fsys := createFS(t, []file{
+		{templateName + ".md", `# {{upper .Title}}`},
+	})
+
+	cfg := &ts.Configuration{
+		TemplatesFS: &fsys,
+		Formats: ts.Formats{
+			ts.Html: &ts.FormatOptions{
+				IsRequired: false,
+			},
+			ts.Text: &ts.FormatOptions{
+				FileExtension: "md",
+				IsRequired:    true,
+			},
+		},
+	}
+
+	tmpls := ts.NewTemplates(*cfg)
+	funcMap := ts.FuncMap{"upper": strings.ToUpper}
+	vars := map[string]interface{}{"Title": "Hello from markdown!"}
+	tmpl := ts.Must(tmpls.Get(templateName)).Funcs(funcMap)
+	expectText := `# HELLO FROM MARKDOWN!`
+	var text bytes.Buffer
+	if err := tmpl.ExecuteText(&text, vars); err != nil {
+		t.Fatal(err)
+	}
+	gotText := text.String()
+	if gotText != expectText {
+		t.Errorf("incorrect text template processing; expect %#q; got: %#q", expectText, gotText)
+	}
 }
