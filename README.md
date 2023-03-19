@@ -44,7 +44,7 @@ File `templates/common/header.html`:
 <body>
 ```
 
-File `templates/common/header.html`:
+File `templates/common/footer.html`:
 
 ```html
 <body>

@@ -38,8 +38,8 @@ func createFS(t *testing.T, files []file) fs.FS {
 func TestGetTemplates(t *testing.T) {
 	fsys := createFS(t, []file{
 		// check parse templates
-		{"template1/one.html", `<html><head><title>{{.Title}}</title></head></html>`},
-		{"template1/one.txt", `# {{.Title}}`},
+		{"template1/one.html", `HTML-code`},
+		{"template1/one.txt", `Plain text`},
 
 		// the template have html only, no txt
 		{"template2/sub/two.html", `-`},
@@ -110,16 +110,23 @@ func TestExecute(t *testing.T) {
 	templateName := "template2/sub/func"
 	fsys := createFS(t, []file{
 		// check funcMap
-		{templateName + ".html", `<html><head><title>{{upper .Title}}</title></head></html>`},
-		{templateName + ".txt", `# {{upper .Title}}`},
+		{templateName + ".html", `{{template "header.html" .}}<h1>Hello, {{.Username}}</h1>{{template "footer.html" .}}`},
+		{templateName + ".txt", `# {{upper .Title}}. {{template "additional.txt" .}}`},
+
+		// common templates
+		{"common/header.html", `<html><head><title>{{upper .Title}}</title></head><body>`},
+		{"common/footer.html", `</body></html>`},
+		{"common/additional.txt", `Help me please.`},
 	})
-	tmpls := ts.NewTemplates(*ts.NewConfiguration(&fsys))
+	cfg := ts.NewConfiguration(&fsys)
+	cfg.SetCommonTemplatesPath("common")
+	tmpls := ts.NewTemplates(*cfg)
 	funcMap := ts.FuncMap{"upper": strings.ToUpper}
-	vars := map[string]interface{}{"Title": "Hello from tests!"}
+	vars := map[string]interface{}{"Title": "Hello from tests", "Username": "Valerii"}
 	tmpl := ts.Must(tmpls.Get(templateName)).Funcs(funcMap)
 
-	expectHtml := `<html><head><title>HELLO FROM TESTS!</title></head></html>`
-	expectText := `# HELLO FROM TESTS!`
+	expectHtml := `<html><head><title>HELLO FROM TESTS</title></head><body><h1>Hello, Valerii</h1></body></html>`
+	expectText := `# HELLO FROM TESTS. Help me please.`
 
 	var html, text bytes.Buffer
 
