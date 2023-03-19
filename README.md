@@ -7,7 +7,7 @@
 ## Description
 
 Simplifies work with template conversion. Just a wrapper for [html/template](https://pkg.go.dev/html/template) and [text/template](https://pkg.go.dev/text/template).
-Works with HTML and TXT (any) files directly through the [is/fs](https://pkg.go.dev/io/fs) (to access files after compilation, it is recommended to use [embed](https://pkg.go.dev/embed) from standart library).
+Works with HTML and TXT (any) files directly through the [io/fs](https://pkg.go.dev/io/fs) (to access files after compilation, it is recommended to use [embed](https://pkg.go.dev/embed) from standart library).
 
 ## Install
 
