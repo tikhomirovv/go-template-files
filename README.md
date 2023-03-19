@@ -23,7 +23,7 @@ Additionally, we can specify in the configuration the path to the common templat
 
 Consider an example. Let's say there is a templates directory at the root of the project that contains a welcome email template. There is also a directory that contains common templates:
 
-```bash
+```
 .
 |-- templates
 |	|-- common
