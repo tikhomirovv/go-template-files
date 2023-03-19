@@ -3,9 +3,9 @@ package templates
 import "io/fs"
 
 type Configuration struct {
-	TemplatesFS *fs.FS
-	Formats     Formats
-	// globalCssFile  string
+	TemplatesFS         *fs.FS
+	Formats             Formats
+	CommonTemplatesPath *string
 }
 
 type Format int
@@ -36,4 +36,9 @@ func NewConfiguration(templatesFS *fs.FS) *Configuration {
 			},
 		},
 	}
+}
+
+// SetCommonTemplatesPath sets common templates path
+func (c *Configuration) SetCommonTemplatesPath(path string) {
+	c.CommonTemplatesPath = &path
 }

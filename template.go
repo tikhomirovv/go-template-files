@@ -2,6 +2,7 @@ package templates
 
 import (
 	"io"
+	"io/fs"
 	"path"
 
 	htmlTemplate "html/template"
@@ -11,6 +12,7 @@ import (
 type TemplateName string
 type TemplateFilename string
 type TemplateFiles map[Format]TemplateFilename
+type TemplateCommonFiles map[Format][]TemplateFilename
 type FuncMap = textTemplate.FuncMap
 type Templates struct {
 	cfg Configuration
@@ -19,6 +21,7 @@ type Template struct {
 	templates Templates
 	Name      TemplateName
 	files     TemplateFiles
+	common    TemplateCommonFiles
 	funcs     FuncMap
 }
 
@@ -37,6 +40,9 @@ func (ts *Templates) Get(path string) (*Template, error) {
 	name := TemplateName(path)
 	t := &Template{templates: *ts, Name: name}
 	if err := t.getFiles(); err != nil {
+		return nil, err
+	}
+	if err := t.getCommonTemplateFiles(); err != nil {
 		return nil, err
 	}
 	return t, nil
@@ -59,9 +65,8 @@ func Must(t *Template, err error) *Template {
 // as optional (`isRequired` == false) in the configuration, the file read error is suppressed
 func (t *Template) getFiles() error {
 	fsys := *t.templates.cfg.TemplatesFS
-	formats := t.templates.cfg.Formats
 	t.files = make(TemplateFiles)
-	for format, opts := range formats {
+	for format, opts := range t.templates.cfg.Formats {
 		filename := string(t.Name) + "." + opts.FileExtension
 		_, err := fsys.Open(filename)
 		if err != nil {
@@ -71,6 +76,24 @@ func (t *Template) getFiles() error {
 			return err
 		}
 		t.files[format] = TemplateFilename(filename)
+	}
+	return nil
+}
+
+// getCommonTemplateFiles scans the file system of common template files
+// by path and for formats specified in the configuration
+func (t *Template) getCommonTemplateFiles() error {
+	if t.templates.cfg.CommonTemplatesPath != nil {
+		t.common = make(TemplateCommonFiles)
+		for format, opts := range t.templates.cfg.Formats {
+			commonTemplates, err := fs.Glob(*t.templates.cfg.TemplatesFS, *t.templates.cfg.CommonTemplatesPath+"/*."+opts.FileExtension)
+			if err != nil {
+				return err
+			}
+			for _, ct := range commonTemplates {
+				t.common[format] = append(t.common[format], TemplateFilename(ct))
+			}
+		}
 	}
 	return nil
 }
@@ -93,18 +116,24 @@ func (t *Template) Funcs(funcMap FuncMap) *Template {
 // execution stops, but partial results may already have been written to
 // the output writer.
 func (t *Template) ExecuteHtml(wr io.Writer, vars interface{}) error {
-	htmlFilename := t.files[Html]
-	if htmlFilename == "" {
-		return nil
+	fsys := *t.templates.cfg.TemplatesFS
+	template := htmlTemplate.New(string(t.Name)).Funcs(t.funcs)
+	var err error
+	// add common templates
+	for _, filename := range t.common[Html] {
+		template, err = template.ParseFS(fsys, string(filename))
+		if err != nil {
+			return err
+		}
 	}
-	template, err := htmlTemplate.
-		New(path.Base(string(htmlFilename))).
-		Funcs(t.funcs).
-		ParseFS(*t.templates.cfg.TemplatesFS, string(htmlFilename))
+	// add new main template
+	mainTemplateFilename := t.files[Html]
+	template, err = template.ParseFS(fsys, string(mainTemplateFilename))
 	if err != nil {
 		return err
 	}
-	return template.Funcs(t.funcs).Execute(wr, vars)
+	mainTemplateName := path.Base(string(mainTemplateFilename))
+	return template.Funcs(t.funcs).ExecuteTemplate(wr, mainTemplateName, vars)
 }
 
 // Identical to the functions in package `text/template`.
@@ -114,18 +143,24 @@ func (t *Template) ExecuteHtml(wr io.Writer, vars interface{}) error {
 // execution stops, but partial results may already have been written to
 // the output writer.
 func (t *Template) ExecuteText(wr io.Writer, vars interface{}) error {
-	textFilename := t.files[Text]
-	if textFilename == "" {
-		return nil
+	fsys := *t.templates.cfg.TemplatesFS
+	template := textTemplate.New(string(t.Name)).Funcs(t.funcs)
+	var err error
+	// add common templates
+	for _, filename := range t.common[Text] {
+		template, err = template.ParseFS(fsys, string(filename))
+		if err != nil {
+			return err
+		}
 	}
-	template, err := textTemplate.
-		New(path.Base(string(textFilename))).
-		Funcs(t.funcs).
-		ParseFS(*t.templates.cfg.TemplatesFS, string(textFilename))
+	// add new main template
+	mainTemplateFilename := t.files[Text]
+	template, err = template.ParseFS(fsys, string(mainTemplateFilename))
 	if err != nil {
 		return err
 	}
-	return template.Execute(wr, vars)
+	mainTemplateName := path.Base(string(mainTemplateFilename))
+	return template.Funcs(t.funcs).ExecuteTemplate(wr, mainTemplateName, vars)
 }
 
 // Execute applies a parsed HTML and text template to the specified data objects,
