@@ -65,7 +65,7 @@ File `templates/greetings/content.html`:
 {{template "footer.html" .}}
 ```
 
-File `templates/greetings.txt`:
+File `templates/greetings/content.txt`:
 
 ```txt
 # {{title .Title}}
