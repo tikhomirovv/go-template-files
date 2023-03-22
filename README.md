@@ -47,7 +47,7 @@ File `templates/common/header.html`:
 File `templates/common/footer.html`:
 
 ```html
-<body>
+</body>
 </html>
 ```
 
@@ -120,7 +120,7 @@ Output:
 <head><title>Greetings!</title></head>
 <body>
 <h1>Hello, Valerii!</h1>
-<body>
+</body>
 </html>
 ```
 
