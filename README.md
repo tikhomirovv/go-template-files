@@ -26,13 +26,13 @@ Consider an example. Let's say there is a templates directory at the root of the
 ```
 .
 |-- templates
-|	|-- common
-|	|	|-- header.html
-|	|	|-- footer.html
-|	|	|-- contacts.txt
-|	|-- greetings
-|	|	|-- content.html
-|	|	|-- content.txt
+|   |-- common
+|   |	|-- header.html
+|   |	|-- footer.html
+|   |	|-- contacts.txt
+|   |-- greetings
+|   |	|-- content.html
+|   |	|-- content.txt
 
 ```
 
