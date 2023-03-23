@@ -54,7 +54,7 @@ File `templates/common/footer.html`:
 File `templates/common/contacts.txt`:
 
 ```txt
-Email: contacts@email.com
+Email: {{ .ContactEmail }}
 ```
 
 File `templates/greetings/content.html`:
