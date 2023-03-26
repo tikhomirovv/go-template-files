@@ -61,7 +61,7 @@ File `templates/greetings/content.html`:
 
 ```html
 {{template "header.html" .}}
-<h1>Thanks for registration, {{.Username}}!</h1></body>
+<h1>Thanks for registration, {{.Username}}!</h1>
 {{template "footer.html" .}}
 ```
 
